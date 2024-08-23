@@ -1,0 +1,155 @@
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h2 {
+    text-align : left;
+    margin-bottom: 30px;
+}
+
+/* Date Range Picker Styles */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-control {
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+/* Timeline Styles */
+#timeline {
+    height: 500px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+}
+
+.vis-timeline {
+    font-family: inherit;
+}
+
+.vis-item {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 14px;
+}
+
+.vis-group {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+    color: #333;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+/* Responsive Styles */
+@media (max-width: 767px) {
+    .container {
+        padding: 10px;
+    }
+}
+
+#selectedItem {
+    border: none;
+    background-color: transparent;
+    font-size: 16px;
+    padding: 5px;
+    outline: none;
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.vis-time-axis .vis-text {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.vis-time-axis .vis-grid.vis-vertical {
+    border-left-style: solid;
+    border-left-width: 1px;
+    border-left-color: #d3d3d3;
+}
+
+.vis-item.vis-box.invalid-reservation {
+    background-color: red;
+    color: white;
+}
+
+.deletion-success-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.deletion-success-container h1 {
+    color: #333;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.deletion-success-container p {
+    color: #666;
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+
+#spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+}
+
+
+
+
+  

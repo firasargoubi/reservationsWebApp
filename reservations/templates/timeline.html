@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Occupancy Timeline</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="../static/style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1 id="title">Parking Timeline</h1>
+    <h2 id="subTitleV">Valid Clients Timeline</h2>
+    <div id="timelineValid"></div>
+    <input type="text" id="selectedItemValid" readonly>
+    <button id="deleteButtonValid" disabled>Delete</button>
+    <button id="invalidateButtonValid" disabled>Invalidate</button>
+    <div id="response-messageValid" class="mt-4"></div>
+    <h2 id="subTitleV">Invalid Clients Timeline</h2>
+    <div id="timelineInvalid"></div>
+    <input type="text" id="selectedItemInvalid" readonly>
+    <button id="deleteButtonInvalid" disabled>Delete</button>
+    <button id="validateButtonInvalid" disabled>Validate</button>
+    <div id="response-messageInvalid" class="mt-4"></div>
+    <script>
+        const containerValid = document.getElementById('timelineValid');
+        const containerInvalid = document.getElementById('timelineInvalid');
+
+        const validItems = new vis.DataSet([
+            {% for client in clients %}
+                {% if not client.invalid %}
+                    {
+                        id: '{{ client.id }}',
+                        content: '{{ client.username }}',
+                        start: '{{ client.start_date }}',
+                        end: '{{ client.end_date }}',
+                        group: '{{ client.garage_num }}',
+                        unit: '{{ client.unit }}',
+                        email : '{{ client.email }}'
+                    },
+                {% endif %}
+            {% endfor %}
+        ]);
+
+        const invalidItems = new vis.DataSet([
+            {% for client in clients %}
+                {% if client.invalid %}
+                    {
+                        id: '{{ client.id }}',
+                        content: '{{ client.username }}',
+                        start: '{{ client.start_date }}',
+                        end: '{{ client.end_date }}',
+                        group: 'invalid',
+                        unit: '{{ client.unit }}',
+                        email : '{{ client.email }}'
+                    },
+                {% endif %}
+            {% endfor %}
+        ]);
+
+        const groupsValid = new vis.DataSet([
+            {% for i in range %}
+                {id: '{{ i }}', content: 'Garage {{ i }}'},
+            {% endfor %}
+        ]);
+        const groupsInvalid = new vis.DataSet([
+            {id : 'invalid', content : "Invalid"}
+        ]);
+
+        const options = {
+            stack: true,
+            selectable: true,
+            showMajorLabels: true,
+            zoomable: false,
+            orientation: 'top',
+            timeAxis: {
+                scale: 'day',
+                step: 1,
+                format: {
+                    minorLabels: {
+                        millisecond: 'HH:mm',
+                        second: 'HH:mm',
+                        minute: 'HH:mm',
+                        hour: 'HH:mm',
+                        weekday: 'ddd D',
+                        day: 'D',
+                        month: 'MMM',
+                        year: 'YYYY'
+                    },
+                    majorLabels: {
+                        millisecond: 'HH:mm:ss',
+                        second: 'HH:mm:ss',
+                        minute: 'HH:mm',
+                        hour: 'HH:mm',
+                        weekday: 'ddd D',
+                        day: 'D',
+                        month: 'MMM',
+                        year: 'YYYY'
+                    }
+                }
+            },
+            subgroupStack: true,
+        };
+
+        const timelineValid = new vis.Timeline(containerValid, validItems, groupsValid, options);
+        const timelineInvalid = new vis.Timeline(containerInvalid, invalidItems, groupsInvalid, options);
+
+        let selectedValidItemData;
+        let selectedInvalidItemData;
+
+        timelineValid.on('select', function(properties) {
+            handleSelect(properties, validItems, timelineValid, 'Valid');
+        });
+
+        timelineInvalid.on('select', function(properties) {
+            handleSelect(properties, invalidItems, timelineInvalid, 'Invalid');
+        });
+
+        function handleSelect(properties, items, timeline, type) {
+            const selectedItem = properties.items[0];
+            const selectedItemData = items.get(selectedItem);
+            const selectedItemContent = selectedItemData.content;
+            const startDate = selectedItemData.start.split('T')[0];
+            const endDate = selectedItemData.end.split('T')[0];
+            const garageNum = selectedItemData.group;
+            const unit = selectedItemData.unit;
+            const email = selectedItemData.email;
+
+            const textBoxId = `selectedItem${type}`;
+            const deleteButtonId = `deleteButton${type}`;
+            const responseMessageId = `response-message${type}`;
+
+            document.getElementById(textBoxId).value = `${selectedItemContent} (${email}) from ${startDate} to ${endDate} (Garage ${garageNum}) with unit ${unit}`;
+            document.getElementById(deleteButtonId).disabled = false;
+
+            const textBox = document.getElementById(textBoxId);
+            textBox.style.width = `${textBox.value.length * 8 + 20}px`;
+
+            if (type == 'Valid') {
+                selectedValidItemData = selectedItemData;
+                document.getElementById('invalidateButtonValid').disabled = false;
+            } else {
+                selectedInvalidItemData = selectedItemData;
+                document.getElementById('validateButtonInvalid').disabled = false;
+            }
+        }
+
+        timelineValid.on('deselect', function() {
+            document.getElementById('selectedItemValid').value = '';
+            document.getElementById('deleteButtonValid').disabled = true;
+        });
+
+        timelineInvalid.on('deselect', function() {
+            document.getElementById('selectedItemInvalid').value = '';
+            document.getElementById('deleteButtonInvalid').disabled = true;
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        document.getElementById('deleteButtonValid').addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete this item?')) {
+                const formData = {
+                    id: selectedValidItemData.id
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: {%url 'delete_admin' %},
+                    dataType: "json",
+                    data: JSON.stringify(formData),
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $(`#response-messageValid`).html(`<div class="alert alert-success">${response.message}</div>`);
+                            validItems.remove(selectedValidItemData.id);
+                            document.getElementById('selectedItemValid').value = '';
+                        } else {
+                            $(`#response-messageValid`).html(`<div class="alert alert-danger">${response.message}</div>`);
+                        }
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        $(`#response-messageValid`).html(`<div class="alert alert-danger">An error occurred. Please try again later.</div>`);
+                    }
+                });
+            }
+        });
+
+        document.getElementById('deleteButtonInvalid').addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete this item?')) {
+                const formData = {
+                    id: selectedInvalidItemData.id
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: {%url 'delete_admin' %},
+                    dataType: "json",
+                    data: JSON.stringify(formData),
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $(`#response-messageInvalid`).html(`<div class="alert alert-success">${response.message}</div>`);
+                            invalidItems.remove(selectedInvalidItemData.id);
+                            document.getElementById('selectedItemInvalid').value = '';
+                            
+                        } else {
+                            $(`#response-messageInvalid`).html(`<div class="alert alert-danger">${response.message}</div>`);
+                        }
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        $(`#response-messageInvalid`).html(`<div class="alert alert-danger">An error occurred. Please try again later.</div>`);
+                    }
+                });
+            }
+        });
+        document.getElementById('validateButtonInvalid').addEventListener('click', () => {
+            if (confirm('Are you sure you want to validate this item?')) {
+                const formData = {
+                    id: selectedInvalidItemData.id
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: {%url 'validate' %},
+                    dataType: "json",
+                    data: JSON.stringify(formData),
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $(`#response-messageInvalid`).html(`<div class="alert alert-success">${response.message}</div>`);
+                            const removedItem = invalidItems.remove(selectedValidItemData.id);
+                            validItems.add(removedItem);
+                            document.getElementById('selectedItemInvalid').value = '';
+                        } else {
+                            $(`#response-messageInvalid`).html(`<div class="alert alert-danger">${response.message}</div>`);
+                        }
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        $(`#response-messageInvalid`).html(`<div class="alert alert-danger">An error occurred. Please try again later.</div>`);
+                    }
+                });
+            }
+        });
+        document.getElementById('invalidateButtonValid').addEventListener('click', () => {
+            if (confirm('Are you sure you want to invalidate this item?')) {
+                const formData = {
+                    id: selectedValidItemData.id
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: {%url 'invalidate' %},
+                    dataType: "json",
+                    data: JSON.stringify(formData),
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $(`#response-messageValid`).html(`<div class="alert alert-success">${response.message}</div>`);
+                            const removedItem = validItems.remove(selectedValidItemData.id);
+                            invalidItems.add(removedItem);
+                            document.getElementById('selectedItemValid').value = '';
+                        } else {
+                            $(`#response-messageValid`).html(`<div class="alert alert-danger">${response.message}</div>`);
+                        }
+                    },
+                    error: function(error) {
+                        console.error(error);
+                        $(`#response-messageValid`).html(`<div class="alert alert-danger">An error occurred. Please try again later.</div>`);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
