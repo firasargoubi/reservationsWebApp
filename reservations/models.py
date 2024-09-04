@@ -21,9 +21,3 @@ class Client(models.Model) :
     unit = models.TextField(null = True)
     garage_num = models.IntegerField(null = True)
     invalid = models.BooleanField(null = True)
-
-
-
-
-    
-    
