@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-urgs4v9q4exivcs6r@wu6-ky-^tl*-7dk&!@)@6n4r=1ki=8%9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['reservationswebapp.onrender.com']
+ALLOWED_HOSTS = ['reservationswebapp.onrender.com','parkreserve.ca']
 
 
 # Application definition
