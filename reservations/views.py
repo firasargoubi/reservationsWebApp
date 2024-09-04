@@ -290,7 +290,3 @@ def sendingEmailEndDate(client):
     except Exception as e:
         print(f"Error sending email: {e}")
 
-
-
-
-update_clients_and_garage()

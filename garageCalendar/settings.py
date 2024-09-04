@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-urgs4v9q4exivcs6r@wu6-ky-^tl*-7dk&!@)@6n4r=1ki=8%9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['reservationswebapp.onrender.com','parkreserve.ca','www.parkreserve.ca']
+ALLOWED_HOSTS = ['*','reservationswebapp.onrender.com','parkreserve.ca','www.parkreserve.ca']
 
 
 # Application definition
@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'reservations',
-    'background_task',
+    'background_task'
 ]
 
 MIDDLEWARE = [
@@ -121,8 +121,24 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'garageCalendar' / 'static',
 ]
-STATIC_ROOT = BASE_DIR / 'garageCalendar' / 'static'
+STATIC_ROOT = BASE_DIR / 'static'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Format string for displaying run time timestamps in the Django admin site. The default
+# just adds seconds to the standard Django format, which is useful for displaying the timestamps
+# for jobs that are scheduled to run on intervals of less than one minute.
+# 
+# See https://docs.djangoproject.com/en/dev/ref/settings/#datetime-format for format string
+# syntax details.
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+
+# Maximum run time allowed for jobs that are triggered manually via the Django admin site, which
+# prevents admin site HTTP requests from timing out.
+# 
+# Longer running jobs should probably be handed over to a background task processing library
+# that supports multiple background worker processes instead (e.g. Dramatiq, Celery, Django-RQ,
+# etc. See: https://djangopackages.org/grids/g/workers-queues-tasks/ for popular options).
+APSCHEDULER_RUN_NOW_TIMEOUT = 25  # Seconds

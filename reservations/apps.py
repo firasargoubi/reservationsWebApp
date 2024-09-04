@@ -1,11 +1,9 @@
 from django.apps import AppConfig
-from background_task import background
 
-class ReservationsConfig(AppConfig):
+class MainConfig(AppConfig) :
+    default_auto_field = 'django.db.models.AutoField'
     name = 'reservations'
 
-    def ready(self):
-        @background(schedule=1)
-        def run_daily_routine():
-            from .views import update_clients_and_garage
-            update_clients_and_garage()
+    def ready(self) :
+        from jobs import updater
+        updater.start()
