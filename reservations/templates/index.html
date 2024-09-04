@@ -47,8 +47,9 @@
                 <span class="visually-hidden">Loading...
             </div>
         </div>
-        <div id="response-message" class="mt-4"></div> 
+        <div id="response-message" class="mt-4"></div>
     </div>
+    <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
     <script>
         function getCookie(name) {
             let cookieValue = null;
@@ -68,24 +69,26 @@
         $(function() {
             let start,end;
             $('input[name="daterange"]').daterangepicker({
+                startDate : moment().add(1, 'days').toDate(),
+                endDate : moment().add(2, 'days').toDate(),
                 opens: 'left',
                 locale: {
                     cancelLabel: 'Clear'
                 },
-                minDate: new Date(),
+                minDate: moment().add(1, 'days').toDate() ,
                 isInvalidDate: function(date) {
-                    return date.valueOf() < moment().startOf('day').valueOf();
+                    return date.valueOf() <= moment().startOf('day').valueOf();
                 }
             }, function(startDate, endDate, label) {
-                $('#spinner').show();
                 start = startDate.format('YYYY-MM-DD');
                 end = endDate.format('YYYY-MM-DD');
             });
 
             $('#booking-form').on('submit', function(e) {
-                
+
                 if (confirm('Are you sure you entered everything corretly')) {
                     e.preventDefault();
+                    $('#response-message').hide();
                     $('#spinner').show();
                     const formData = {
                         unit: $('input[name="unit"]:checked').val(),
@@ -94,7 +97,7 @@
                         start_date: start,
                         end_date: end
                     };
-                    
+
                     $.ajax({
                         type: 'POST',
                         url: {% url 'reservations' %},
@@ -103,9 +106,11 @@
                         headers: {
                             "X-Requested-With": "XMLHttpRequest",
                             "X-CSRFToken": getCookie("csrftoken"),
+                            csrfmiddlewaretoken: window.CSRF_TOKEN,
                         },
                         success: function(response) {
                             $('#spinner').hide();
+                            $('#response-message').show();
                             if (response.success) {
                                 $('#response-message').html('<div class="alert alert-success">' + response.message + '</div>');
                             } else {
@@ -114,13 +119,14 @@
                         },
                         error: function(error) {
                             $('#spinner').hide();
+                            $('#response-message').show();
                             console.error(error);
                             $('#response-message').html('<div class="alert alert-danger">An error occurred. Please try again later.</div>');
                         }
                     });
                 }
             });
-            
+
         });
 
     </script>
