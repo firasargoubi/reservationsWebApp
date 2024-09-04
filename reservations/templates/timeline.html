@@ -21,6 +21,7 @@
     <button id="deleteButtonInvalid" disabled>Delete</button>
     <button id="validateButtonInvalid" disabled>Validate</button>
     <div id="response-messageInvalid" class="mt-4"></div>
+    <script type="text/javascript"> window.CSRF_TOKEN = "{{ csrf_token }}"; </script>
     <script>
         const containerValid = document.getElementById('timelineValid');
         const containerInvalid = document.getElementById('timelineInvalid');
@@ -183,6 +184,7 @@
                     headers: {
                         "X-Requested-With": "XMLHttpRequest",
                         "X-CSRFToken": getCookie("csrftoken"),
+                        csrfmiddlewaretoken: window.CSRF_TOKEN,
                     },
                     success: function(response) {
                         if (response.success) {
@@ -215,13 +217,14 @@
                     headers: {
                         "X-Requested-With": "XMLHttpRequest",
                         "X-CSRFToken": getCookie("csrftoken"),
+                        csrfmiddlewaretoken: window.CSRF_TOKEN,
                     },
                     success: function(response) {
                         if (response.success) {
                             $(`#response-messageInvalid`).html(`<div class="alert alert-success">${response.message}</div>`);
                             invalidItems.remove(selectedInvalidItemData.id);
                             document.getElementById('selectedItemInvalid').value = '';
-                            
+
                         } else {
                             $(`#response-messageInvalid`).html(`<div class="alert alert-danger">${response.message}</div>`);
                         }
@@ -247,12 +250,12 @@
                     headers: {
                         "X-Requested-With": "XMLHttpRequest",
                         "X-CSRFToken": getCookie("csrftoken"),
+                        csrfmiddlewaretoken: window.CSRF_TOKEN,
                     },
                     success: function(response) {
                         if (response.success) {
                             $(`#response-messageInvalid`).html(`<div class="alert alert-success">${response.message}</div>`);
                             const removedItem = invalidItems.remove(selectedValidItemData.id);
-                            validItems.add(removedItem);
                             document.getElementById('selectedItemInvalid').value = '';
                         } else {
                             $(`#response-messageInvalid`).html(`<div class="alert alert-danger">${response.message}</div>`);
@@ -279,12 +282,12 @@
                     headers: {
                         "X-Requested-With": "XMLHttpRequest",
                         "X-CSRFToken": getCookie("csrftoken"),
+                        csrfmiddlewaretoken: window.CSRF_TOKEN,
                     },
                     success: function(response) {
                         if (response.success) {
                             $(`#response-messageValid`).html(`<div class="alert alert-success">${response.message}</div>`);
                             const removedItem = validItems.remove(selectedValidItemData.id);
-                            invalidItems.add(removedItem);
                             document.getElementById('selectedItemValid').value = '';
                         } else {
                             $(`#response-messageValid`).html(`<div class="alert alert-danger">${response.message}</div>`);
