@@ -121,7 +121,7 @@
                             $('#spinner').hide();
                             $('#response-message').show();
                             console.error(error);
-                            $('#response-message').html('<div class="alert alert-danger">An error occurred. Please try again later.</div>');
+                            $('#response-message').html('<div class="alert alert-danger">' + response.message + '</div>');
                         }
                     });
                 }
