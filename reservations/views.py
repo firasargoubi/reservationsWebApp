@@ -4,8 +4,6 @@ import json
 from .models import Units, Client,Garage
 from datetime import datetime
 from django.template import loader
-from django.db.models import Prefetch
-from django.urls import reverse
 import yagmail
 
 def calendar(request) :
@@ -14,22 +12,22 @@ def calendar(request) :
             garage = Garage(occupied = False,number = i,code = 69420)
             garage.save()
             print(garage)
-    
+
     if (Units.objects.all().count() == 0) :
         unit = Units(short = "FU",name = "FirstUnit")
         unit.save()
         unit2 = Units(short = "SU", name = "SecondUnit")
         unit2.save()
-    
+
     context = {
         'units' : Units.objects.all().values(),
     }
-    
+
     template = loader.get_template("index.html")
     return HttpResponse(template.render(context, request))
 
 def make_reservation(request):
-    
+
     if request.method == 'POST':
         data = json.loads(request.body)
         start_date = data.get('start_date')
@@ -39,9 +37,11 @@ def make_reservation(request):
         email = data.get('email')
         isAvailable, garageNum = is_available(start_date, end_date)
         isFraud,idFraud = is_fraud(start_date,end_date,unit)
+        if start_date == end_date :
+            return JsonResponse({'success': False, 'message': 'You need to select a start date and an end date that are different!'})
         if isFraud or isAvailable:
-            
-            
+
+
             message = "Reservation made successfully, an email with the details has been sent!" if not isFraud else "Your reservation is still on hold, we will contact you for more informations ."
             # Create reservation
             client = Client(username = username,email=email,
@@ -54,14 +54,14 @@ def make_reservation(request):
                 clientOriginal.garage_num =  0
                 clientOriginal.invalid = True
                 clientOriginal.save()
-                
+
             client.save()
             sendingEmailConfirmation(client,isFraud)
             return JsonResponse({'success':not isFraud, 'message': message})
-            
+
         else:
             return JsonResponse({'success': False, 'message': 'Slot not available'})
-            #Add a email bot to send an email to the admin about the fact that a Customer doesn't have a Garage 
+            #Add a email bot to send an email to the admin about the fact that a Customer doesn't have a Garage
     else:
         return JsonResponse({'error': 'Invalid request'})
 
@@ -74,14 +74,17 @@ def timeline(request) :
     return render(request, 'timeline.html', context)
 
 def delete_page(request,id) :
-    client = Client.objects.get(id=id)
-    context = {
-        'client': client
-    }
-    sendingEmailDeletion(client)
-    client.delete()
-    
-    return render(request, 'delete_page.html', context)
+    try :
+        client = Client.objects.get(id=id)
+        context = {
+            'client': client
+        }
+        sendingEmailDeletion(client)
+        client.delete()
+
+        return render(request, 'delete_page.html', context)
+    except :
+        return render(request, 'delete_page_unknown.html')
 
 def delete_client(request):
     if request.method == 'POST':
@@ -90,7 +93,7 @@ def delete_client(request):
             client = Client.objects.get(id=data.get('id'))
             sendingEmailDeletion(client)
             client.delete()
-            
+
             return JsonResponse({'success': True, 'message': 'Client deleted successfully, please refresh the page.'})
         except Client.DoesNotExist:
             print("Meh")
@@ -118,7 +121,7 @@ def validate_user(request) :
         client.save()
         sendingEmailConfirmation(client,False)
         return JsonResponse({'success': True,'message' : "The user is now validated, please refresh the page"})
-    
+
 def invalidate_user(request) :
     if request.method == 'POST' :
         data = json.loads(request.body)
@@ -132,19 +135,19 @@ def invalidate_user(request) :
 "Helper functions"
 def is_duplicate(username,email,unit,start_date,end_date) :
     for client in Client.objects.all().values() :
-        if ((client["username"].lower() == username.lower() or client["email"].lower() == email.lower()) and 
-            client["unit"].lower() == unit.lower() and 
-            client["start_date"] == start_date and 
+        if ((client["username"].lower() == username.lower() or client["email"].lower() == email.lower()) and
+            client["unit"].lower() == unit.lower() and
+            client["start_date"] == start_date and
             client["end_date"] == end_date ):
             return True
     return False
 
 def is_fraud(start_date,end_date,unit) :
     for client in Client.objects.all().values() :
-        if (client["start_date"] == start_date and 
+        if (client["start_date"] == start_date and
             client["end_date"] == end_date and
             client["unit"] == unit and
-            client["garage_num"] !=0 ):
+            not client["invalid"] ):
             return [True,client["id"]]
     return [False,0]
 
@@ -164,16 +167,20 @@ def is_available(start_date,end_date) :
                 break
         if seen == False :
             return [True,i]
-    return [False,0]   
+    return [False,0]
 
 def update_clients_and_garage():
     today = datetime.now().strftime("%Y-%m-%d")
-    for client in Client.objects.all().values() :
-        if client.start_date == today :
+    for client in Client.objects.all() :
+        if client.invalid :
+            continue
+        if client.start_date == today  :
             sendingEmailStartDate(client)
         elif client.end_date == today :
             sendingEmailEndDate(client)
-            client.delete()      
+            client.delete()
+        elif client.end_date <= today :
+            client.delete()
 
 def sendingEmailConfirmation(client, isFraud):
     yag = yagmail.SMTP("garageconfirmationkey@gmail.com", "nhpi xxxu eqkc ylzm")
@@ -181,7 +188,7 @@ def sendingEmailConfirmation(client, isFraud):
     try:
         if not isFraud:
             subject = "Garage Reservation Confirmation"
-            delete_reservation_url = reverse('delete_reservation', kwargs={'id': client.id})
+            delete_reservation_url = f'www.parkreserve.ca/delete_reservation/{client.id}'
             contents = """
                 <html>
                 <body>
@@ -230,7 +237,7 @@ def sendingEmailDeletion(client):
 def sendingEmailStartDate(client):
 
     yag = yagmail.SMTP("garageconfirmationkey@gmail.com", "nhpi xxxu eqkc ylzm")
-
+    garage = Garage.objects.get(number = client.garage_num)
     try:
         subject = "Garage Reservation Reminder"
         contents = """
@@ -261,26 +268,29 @@ def sendingEmailEndDate(client):
     yag = yagmail.SMTP("garageconfirmationkey@gmail.com", "nhpi xxxu eqkc ylzm")
 
     try:
-        subject = "Garage Reservation Reminder"
+        subject = "Garage Reservation Ended"
         contents = """
             <html>
             <body>
                 <p>Dear {0},</p>
-                <p>This is a friendly reminder that your garage reservation starts today!</p>
+                <p>Your garage reservation has ended. Thank you for using our services.</p>
                 <p>Reservation Details:</p>
                 <p>Unit: {1}</p>
                 <p>Check-in Date: {2}</p>
                 <p>Check-out Date: {3}</p>
                 <p>Garage Number: {4}</p>
-                <p>Garage Code: {5}</p>
-                <p>Please use the provided garage code to access your assigned garage.</p>
                 <p>If you have any questions or concerns, please don't hesitate to contact us.</p>
                 <p>Best regards,</p>
                 <p>Your Garage Team</p>
             </body>
             </html>
-        """.format(client.username, client.unit, client.start_date, client.end_date, client.garage_num, garage.code)
+        """.format(client.username, client.unit, client.start_date, client.end_date, client.garage_num)
         yag.send(to=client.email, subject=subject, contents=contents)
         print(f"Reservation reminder email sent to {client.email}")
     except Exception as e:
         print(f"Error sending email: {e}")
+
+
+
+
+update_clients_and_garage()
