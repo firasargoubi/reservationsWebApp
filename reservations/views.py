@@ -35,15 +35,18 @@ def make_reservation(request):
         unit = data.get('unit')
         username = data.get('username')
         email = data.get('email')
+        if start_date == None or end_date == None :
+            return JsonResponse({'success': False, 'message': 'Please fill in all the fields!'})
+        elif start_date == end_date :
+            return JsonResponse({'success': False, 'message': 'You need to select a start date and an end date that are different!'})
+        
         isAvailable, garageNum = is_available(start_date, end_date)
         isFraud,idFraud = is_fraud(start_date,end_date,unit)
         if start_date == end_date :
             return JsonResponse({'success': False, 'message': 'You need to select a start date and an end date that are different!'})
-        elif not start_date or not end_date :
+        elif not start_date or not end_date or not unit or not username or not email :
             return JsonResponse({'success': False, 'message': 'Please fill in all the fields!'})
         if isFraud or isAvailable:
-
-
             message = "Reservation made successfully, an email with the details has been sent!" if not isFraud else "Your reservation is still on hold, we will contact you for more informations ."
             # Create reservation
             client = Client(username = username,email=email,
