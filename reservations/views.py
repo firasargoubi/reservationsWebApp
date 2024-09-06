@@ -10,12 +10,12 @@ def calendar(request) :
     try :
         if (Garage.objects.all().count() == 0) :
             for i in range(1,9) :
-                garage = Garage(occupied = False,number = i,code = 69420)
+                garage = Garage(number = i,code = 69420)
                 garage.save()
                 print(garage)
     except :
         for i in range(1,9) :
-                garage = Garage(occupied = False,number = i,code = 69420)
+                garage = Garage(number = i,code = 69420)
                 garage.save()
                 print(garage)
     try :
