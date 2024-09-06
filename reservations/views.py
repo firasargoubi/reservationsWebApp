@@ -25,9 +25,9 @@ def calendar(request) :
             unit2 = Units( name = "SecondUnit")
             unit2.save()
     except :
-        unit = Units(short = "FU", name = "FirstUnit")
+        unit = Units( name = "FirstUnit")
         unit.save()
-        unit2 = Units(short = "SU", name = "SecondUnit")
+        unit2 = Units(name = "SecondUnit")
         unit2.save()
 
     context = {
