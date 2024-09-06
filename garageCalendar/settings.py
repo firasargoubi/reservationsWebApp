@@ -78,13 +78,15 @@ WSGI_APPLICATION = 'garageCalendar.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        # Replace this value with your local database's connection string.
-        default='postgres://avnadmin:AVNS_QfitOXWWtLSqfb4igKM@reservationsdata-firas-ce91.c.aivencloud.com:24587/defaultdb?sslmode=require',
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'defaultdb', 
+        'USER': 'avnadmin',
+        'PASSWORD': 'AVNS_QfitOXWWtLSqfb4igKM',
+        'HOST': 'reservationsdata-firas-ce91.c.aivencloud.com', 
+        'PORT': '24587',
+    }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
