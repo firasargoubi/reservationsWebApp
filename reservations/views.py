@@ -7,14 +7,25 @@ from django.template import loader
 import yagmail
 
 def calendar(request) :
-    if (Garage.objects.all().count() == 0) :
+    try :
+        if (Garage.objects.all().count() == 0) :
+            for i in range(1,9) :
+                garage = Garage(occupied = False,number = i,code = 69420)
+                garage.save()
+                print(garage)
+    except :
         for i in range(1,9) :
-            garage = Garage(occupied = False,number = i,code = 69420)
-            garage.save()
-            print(garage)
-
-    if (Units.objects.all().count() == 0) :
-        unit = Units(short = "FU",name = "FirstUnit")
+                garage = Garage(occupied = False,number = i,code = 69420)
+                garage.save()
+                print(garage)
+    try :
+        if (Units.objects.all().count() == 0) :
+            unit = Units(short = "FU",name = "FirstUnit")
+            unit.save()
+            unit2 = Units(short = "SU", name = "SecondUnit")
+            unit2.save()
+    except :
+        unit = Units(short = "FU", name = "FirstUnit")
         unit.save()
         unit2 = Units(short = "SU", name = "SecondUnit")
         unit2.save()
