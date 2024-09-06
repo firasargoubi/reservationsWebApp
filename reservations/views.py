@@ -39,7 +39,7 @@ def make_reservation(request):
         isFraud,idFraud = is_fraud(start_date,end_date,unit)
         if start_date == end_date :
             return JsonResponse({'success': False, 'message': 'You need to select a start date and an end date that are different!'})
-        elif not start_date or not end_date or not unit or not username or not email :
+        elif not start_date or not end_date :
             return JsonResponse({'success': False, 'message': 'Please fill in all the fields!'})
         if isFraud or isAvailable:
 

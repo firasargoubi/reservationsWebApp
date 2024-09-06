@@ -21,7 +21,7 @@
                 <label for="unit" class="form-label">Unit</label>
                 <div class="form-check">
                     {% for unit in units %}
-                    <input class="form-check-input" type="radio" name="unit" id="{{ unit.id }}" value="{{ unit.name }}">
+                    <input class="form-check-input" type="radio" name="unit" id="{{ unit.id }}" value="{{ unit.name }}" required>
                     <label class="form-check-label" for="{{ unit.id }}">{{ unit.name }}</label>
                     <br>
                     {% endfor %}
